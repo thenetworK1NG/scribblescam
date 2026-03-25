@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#071022" />
   <title>Streamer Pose — Upper Body Skeleton</title>
   <style>
     :root{--bg:#0f1724;--card:#0b1220;--accent:#4fd1c5;--muted:#9aa6b2}
@@ -49,9 +50,22 @@
       button{padding:10px 14px;font-size:15px}
       .stage{height:60vh}
     }
+
+    /* Fullscreen overlay shown when site is opened on non-mobile devices */
+    .mobile-overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(2,6,23,0.95),rgba(2,6,23,0.96));z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+    .mobile-overlay .card{max-width:520px;background:transparent;color:#e6eef3}
+    .mobile-overlay h2{margin:0 0 8px;font-size:20px}
+    .mobile-overlay p{margin:0;color:var(--muted)}
+    @media (prefers-reduced-motion:reduce){.mobile-overlay *{animation:none}}
   </style>
 </head>
 <body>
+  <div id="mobileOnlyOverlay" class="mobile-overlay" style="display:none;">
+    <div class="card" role="alert">
+      <h2>This is a mobile-only site</h2>
+      <p>Please open this page on a phone or other mobile device for the intended experience.</p>
+    </div>
+  </div>
   <div class="app">
     <div class="top">
       <div class="controls">
@@ -86,17 +100,63 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
   <script>
     (function(){
-      const menuBtn = document.getElementById('menuBtn');
-      const panel = document.getElementById('menuPanel');
-      function closePanel(){ if(panel){panel.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); panel.setAttribute('aria-hidden','true');} }
-      function openPanel(){ if(panel){panel.classList.add('open'); menuBtn.setAttribute('aria-expanded','true'); panel.setAttribute('aria-hidden','false');} }
-      if(menuBtn && panel){
-        menuBtn.addEventListener('click', e => { e.stopPropagation(); if(panel.classList.contains('open')) closePanel(); else openPanel(); });
-        panel.addEventListener('click', e => e.stopPropagation());
-        document.addEventListener('click', () => { if(panel.classList.contains('open')) closePanel(); });
-      }
-    })();
-  </script>
+      (function(){
+        const menuBtn = document.getElementById('menuBtn');
+        const panel = document.getElementById('menuPanel');
+        function closePanel(){ if(panel){panel.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); panel.setAttribute('aria-hidden','true');} }
+        function openPanel(){ if(panel){panel.classList.add('open'); menuBtn.setAttribute('aria-expanded','true'); panel.setAttribute('aria-hidden','false');} }
+        if(menuBtn && panel){
+          menuBtn.addEventListener('click', e => { e.stopPropagation(); if(panel.classList.contains('open')) closePanel(); else openPanel(); });
+          panel.addEventListener('click', e => e.stopPropagation());
+          document.addEventListener('click', () => { if(panel.classList.contains('open')) closePanel(); });
+        }
+      })();
   <script src="pose.js"></script>
-</body>
-</html>
+    <script>
+      // Mobile-only detection and conditional script loading.
+      (function(){
+        function isMobile() {
+          const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+          const mobileRegex = /Mobi|Android|iPhone|iPad|iPod|Phone|Mobile/i;
+          if (mobileRegex.test(ua)) return true;
+          // Fallback: treat devices with touch support and narrow width as mobile
+          if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 900) return true;
+          return false;
+        }
+
+        const overlay = document.getElementById('mobileOnlyOverlay');
+        if (!isMobile()){
+          if (overlay) overlay.style.display = 'flex';
+          // Do not load heavy libs or run camera/pose code on desktop.
+          return;
+        }
+
+        // Dynamically load scripts in sequence for mobile devices only
+        function loadScript(src){
+          return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = false;
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error('Failed to load ' + src));
+            document.body.appendChild(s);
+          });
+        }
+
+        // load Mediapipe libs then app script
+        const libs = [
+          'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js',
+          'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js',
+          'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js'
+        ];
+
+        (async function(){
+          try{
+            for(const lib of libs) await loadScript(lib);
+            await loadScript('pose.js');
+          }catch(err){
+            console.error('Script load error', err);
+          }
+        })();
+      })();
+    </script>
