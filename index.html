@@ -95,68 +95,65 @@
     <div class="footer">MadE By Mr $CR!BBL3$</div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
   <script>
     (function(){
-      (function(){
-        const menuBtn = document.getElementById('menuBtn');
-        const panel = document.getElementById('menuPanel');
-        function closePanel(){ if(panel){panel.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); panel.setAttribute('aria-hidden','true');} }
-        function openPanel(){ if(panel){panel.classList.add('open'); menuBtn.setAttribute('aria-expanded','true'); panel.setAttribute('aria-hidden','false');} }
-        if(menuBtn && panel){
-          menuBtn.addEventListener('click', e => { e.stopPropagation(); if(panel.classList.contains('open')) closePanel(); else openPanel(); });
-          panel.addEventListener('click', e => e.stopPropagation());
-          document.addEventListener('click', () => { if(panel.classList.contains('open')) closePanel(); });
+      const menuBtn = document.getElementById('menuBtn');
+      const panel = document.getElementById('menuPanel');
+      function closePanel(){ if(panel){panel.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); panel.setAttribute('aria-hidden','true');} }
+      function openPanel(){ if(panel){panel.classList.add('open'); menuBtn.setAttribute('aria-expanded','true'); panel.setAttribute('aria-hidden','false');} }
+      if(menuBtn && panel){
+        menuBtn.addEventListener('click', e => { e.stopPropagation(); if(panel.classList.contains('open')) closePanel(); else openPanel(); });
+        panel.addEventListener('click', e => e.stopPropagation());
+        document.addEventListener('click', () => { if(panel.classList.contains('open')) closePanel(); });
+      }
+    })();
+  </script>
+
+  <script>
+    // Mobile-only detection and conditional script loading.
+    (function(){
+      function isMobile() {
+        const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+        const mobileRegex = /Mobi|Android|iPhone|iPad|iPod|Phone|Mobile/i;
+        if (mobileRegex.test(ua)) return true;
+        if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 900) return true;
+        return false;
+      }
+
+      const overlay = document.getElementById('mobileOnlyOverlay');
+      if (!isMobile()){
+        if (overlay) overlay.style.display = 'flex';
+        // Do not load heavy libs or run camera/pose code on desktop.
+        return;
+      }
+
+      function loadScript(src){
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = false;
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('Failed to load ' + src));
+          document.body.appendChild(s);
+        });
+      }
+
+      // load Mediapipe libs then app script
+      const libs = [
+        'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js',
+        'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js',
+        'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js'
+      ];
+
+      (async function(){
+        try{
+          for(const lib of libs) await loadScript(lib);
+          await loadScript('pose.js');
+        }catch(err){
+          console.error('Script load error', err);
         }
       })();
-  <script src="pose.js"></script>
-    <script>
-      // Mobile-only detection and conditional script loading.
-      (function(){
-        function isMobile() {
-          const ua = navigator.userAgent || navigator.vendor || window.opera || '';
-          const mobileRegex = /Mobi|Android|iPhone|iPad|iPod|Phone|Mobile/i;
-          if (mobileRegex.test(ua)) return true;
-          // Fallback: treat devices with touch support and narrow width as mobile
-          if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0 && Math.min(window.innerWidth, window.innerHeight) <= 900) return true;
-          return false;
-        }
-
-        const overlay = document.getElementById('mobileOnlyOverlay');
-        if (!isMobile()){
-          if (overlay) overlay.style.display = 'flex';
-          // Do not load heavy libs or run camera/pose code on desktop.
-          return;
-        }
-
-        // Dynamically load scripts in sequence for mobile devices only
-        function loadScript(src){
-          return new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = false;
-            s.onload = () => resolve();
-            s.onerror = () => reject(new Error('Failed to load ' + src));
-            document.body.appendChild(s);
-          });
-        }
-
-        // load Mediapipe libs then app script
-        const libs = [
-          'https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js',
-          'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js',
-          'https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js'
-        ];
-
-        (async function(){
-          try{
-            for(const lib of libs) await loadScript(lib);
-            await loadScript('pose.js');
-          }catch(err){
-            console.error('Script load error', err);
-          }
-        })();
-      })();
-    </script>
+    })();
+  </script>
+    </body>
+    </html>
