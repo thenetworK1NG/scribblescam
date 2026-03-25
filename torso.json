@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "widthMultiplier": 2.5,
+  "heightMultiplier": 1.5,
+  "alpha": 0.95,
+  "rotationOffsetDegrees": 90,
+  "centerOffsetX": 0,
+  "centerOffsetY": 0.5,
+  "hipOffsetMultiplier": 0
+}

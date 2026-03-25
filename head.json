@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "widthMultiplier": 1.5,
+  "heightMultiplier": 1,
+  "offsetX": 0,
+  "offsetY": -100,
+  "rotationOffsetDegrees": 180
+,
+  "alpha": 1.0,
+  "leftImage": "images/headleft.png",
+  "rightImage": "images/headright.png",
+  "turnThreshold": 0.18
+}
